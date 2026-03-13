@@ -13,14 +13,15 @@
 import streamlit as st
 import json
 import requests
+import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # ============ GitHub Gist 配置 ============
-GIST_ID = "your_gist_id_here"  # 从 .env 读取
-GITHUB_TOKEN = "your_github_token_here"  # 从 .env 读取
+GIST_ID = os.getenv("GIST_ID", "your_gist_id_here")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "your_github_token_here")
 GIST_FILENAME = "attendance_data.json"
 
 # ============ 数据加载/保存 ============
