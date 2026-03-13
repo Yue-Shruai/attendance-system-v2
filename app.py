@@ -77,6 +77,7 @@ def save_data(data):
             return True
         else:
             st.error(f"保存失败: {response.status_code}")
+            st.write(f"错误详情: {response.text[:200]}")
             return False
     except Exception as e:
         st.error(f"保存异常: {e}")
