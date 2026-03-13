@@ -69,11 +69,11 @@ def save_data(data):
     
     try:
         response = requests.patch(url, headers=headers, json=payload)
-        st.debug(f"保存响应: {response.status_code}")
+        st.write(f"保存响应: {response.status_code}")
         if response.status_code == 200:
             return True
         else:
-            st.error(f"保存失败: {response.status_code} - {response.text}")
+            st.error(f"保存失败: {response.status_code}")
             return False
     except Exception as e:
         st.error(f"保存异常: {e}")
