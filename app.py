@@ -48,6 +48,7 @@ def load_data():
 def save_data(data):
     """保存数据到 GitHub Gist"""
     if GIST_ID == "your_gist_id_here" or not GITHUB_TOKEN or GITHUB_TOKEN == "your_github_token_here":
+        st.error("Gist配置未设置")
         return False
     
     url = f"https://api.github.com/gists/{GIST_ID}"
@@ -68,8 +69,14 @@ def save_data(data):
     
     try:
         response = requests.patch(url, headers=headers, json=payload)
-        return response.status_code == 200
-    except:
+        st.debug(f"保存响应: {response.status_code}")
+        if response.status_code == 200:
+            return True
+        else:
+            st.error(f"保存失败: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        st.error(f"保存异常: {e}")
         return False
 
 # ============ 页面配置 ============
