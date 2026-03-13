@@ -12,27 +12,26 @@
 
 import streamlit as st
 import json
-import os
 import requests
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# ============ 配置 ============
-GIST_ID = os.getenv("GIST_ID")  # Gist ID
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # GitHub Token
+# ============ GitHub Gist 配置 ============
+GIST_ID = "your_gist_id_here"  # 从 .env 读取
+GITHUB_TOKEN = "your_github_token_here"  # 从 .env 读取
 GIST_FILENAME = "attendance_data.json"
 
-# ============ GitHub Gist API ============
-def load_data_from_gist():
+# ============ 数据加载/保存 ============
+def load_data():
     """从 GitHub Gist 加载数据"""
-    if not GIST_ID:
+    if GIST_ID == "your_gist_id_here":
         return {"students": [], "attendance": []}
     
     url = f"https://api.github.com/gists/{GIST_ID}"
     headers = {"Accept": "application/vnd.github.v3+json"}
-    if GITHUB_TOKEN:
+    if GITHUB_TOKEN and GITHUB_TOKEN != "your_github_token_here":
         headers["Authorization"] = f"token {GITHUB_TOKEN}"
     
     try:
@@ -40,15 +39,14 @@ def load_data_from_gist():
         if response.status_code == 200:
             files = response.json().get("files", {})
             if GIST_FILENAME in files:
-                content = files[GIST_FILENAME]["content"]
-                return json.loads(content)
+                return json.loads(files[GIST_FILENAME]["content"])
     except:
         pass
     return {"students": [], "attendance": []}
 
-def save_data_to_gist(data):
+def save_data(data):
     """保存数据到 GitHub Gist"""
-    if not GIST_ID or not GITHUB_TOKEN:
+    if GIST_ID == "your_gist_id_here" or not GITHUB_TOKEN or GITHUB_TOKEN == "your_github_token_here":
         return False
     
     url = f"https://api.github.com/gists/{GIST_ID}"
@@ -59,7 +57,7 @@ def save_data_to_gist(data):
     
     payload = {
         "description": "考勤管理系统数据",
-        "public": False,
+        "public": True,
         "files": {
             GIST_FILENAME: {
                 "content": json.dumps(data, ensure_ascii=False, indent=2)
@@ -75,17 +73,17 @@ def save_data_to_gist(data):
 
 # ============ 页面配置 ============
 st.set_page_config(
-    page_title="考勤管理系统（云端版）",
+    page_title="考勤管理系统",
     page_icon="📋",
     layout="wide"
 )
 
-st.title("📋 考勤管理系统（云端版）")
+st.title("📋 考勤管理系统")
 
 # ============ 加载数据 ============
-data = load_data_from_gist()
+data = load_data()
 
-# ============ 标签页 ============
+# ============ 创建标签页 ============
 tab1, tab2, tab3 = st.tabs(["👥 学生管理", "📝 考勤记录", "🔍 查询统计"])
 
 # ============ 学生管理 ============
@@ -99,12 +97,12 @@ with tab1:
         if st.button("添加", use_container_width=True):
             if new_student and new_student not in data["students"]:
                 data["students"].append(new_student)
-                if save_data_to_gist(data):
+                if save_data(data):
                     st.success(f"添加成功: {new_student}")
                     st.rerun()
                 else:
                     st.error("保存失败")
-
+    
     st.subheader(f"学生列表 ({len(data['students'])}人)")
     if data["students"]:
         for i, student in enumerate(data["students"]):
@@ -114,7 +112,7 @@ with tab1:
             with col2:
                 if st.button("删除", key=f"del_{i}", use_container_width=True):
                     data["students"].remove(student)
-                    if save_data_to_gist(data):
+                    if save_data(data):
                         st.success("删除成功")
                         st.rerun()
                     else:
@@ -138,7 +136,7 @@ with tab2:
         
         if st.button("保存考勤记录", use_container_width=True):
             if selected_students:
-                # 更新记录
+                # 检查是否已存在该日期
                 existing_idx = None
                 for idx, record in enumerate(data["attendance"]):
                     if record["date"] == str(selected_date):
@@ -153,7 +151,7 @@ with tab2:
                         "students": selected_students
                     })
                 
-                if save_data_to_gist(data):
+                if save_data(data):
                     st.success(f"已保存 {len(selected_students)} 人的考勤记录")
                 else:
                     st.error("保存失败")
