@@ -47,6 +47,9 @@ def load_data():
 
 def save_data(data):
     """保存数据到 GitHub Gist"""
+    st.write(f"调试 - GIST_ID: {GIST_ID}")
+    st.write(f"调试 - GITHUB_TOKEN: {GITHUB_TOKEN[:10] if GITHUB_TOKEN else 'None'}...")
+    
     if GIST_ID == "your_gist_id_here" or not GITHUB_TOKEN or GITHUB_TOKEN == "your_github_token_here":
         st.error("Gist配置未设置")
         return False
