@@ -165,6 +165,7 @@ with tab2:
                 
                 if save_data(data):
                     st.success(f"已保存 {len(selected_students)} 人的考勤记录")
+                    st.rerun()
                 else:
                     st.error("保存失败")
             else:
