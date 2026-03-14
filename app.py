@@ -170,6 +170,52 @@ with tab2:
                     st.error("保存失败")
             else:
                 st.warning("请至少选择一个学生")
+        
+        # 显示该日期已有的考勤记录并提供删除功能
+        st.divider()
+        st.subheader("管理已有考勤记录")
+        
+        # 查找该日期的已有记录
+        existing_record = None
+        for record in data["attendance"]:
+            if record["date"] == str(selected_date):
+                existing_record = record
+                break
+        
+        if existing_record and existing_record["students"]:
+            st.write(f"📅 {selected_date} 已考勤的学生：")
+            for student in existing_record["students"]:
+                col1, col2 = st.columns([4, 1])
+                with col1:
+                    st.write(f"✓ {student}")
+                with col2:
+                    # 使用 session_state 来处理确认对话框
+                    if f"confirm_delete_{student}" not in st.session_state:
+                        st.session_state[f"confirm_delete_{student}"] = False
+                    
+                    if st.session_state[f"confirm_delete_{student}"]:
+                        # 显示确认对话框
+                        col_a, col_b = st.columns(2)
+                        with col_a:
+                            if st.button(f"✅ 确认", key=f"yes_{student}", use_container_width=True):
+                                # 删除该学生
+                                existing_record["students"].remove(student)
+                                if save_data(data):
+                                    st.success(f"已删除 {student}")
+                                    st.session_state[f"confirm_delete_{student}"] = False
+                                    st.rerun()
+                                else:
+                                    st.error("删除失败")
+                        with col_b:
+                            if st.button(f"❌ 取消", key=f"no_{student}", use_container_width=True):
+                                st.session_state[f"confirm_delete_{student}"] = False
+                                st.rerun()
+                    else:
+                        if st.button(f"🗑️ 删除", key=f"del_{student}_{selected_date}", use_container_width=True):
+                            st.session_state[f"confirm_delete_{student}"] = True
+                            st.rerun()
+        else:
+            st.info("该日期暂无考勤记录")
 
 # ============ 查询统计 ============
 with tab3:
